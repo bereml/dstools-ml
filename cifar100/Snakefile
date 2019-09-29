@@ -1,0 +1,23 @@
+# Snakefile for CIFAR-100
+
+import os
+from os.path import join
+
+from dotenv import load_dotenv
+
+load_dotenv()
+DATASETS_DIR = os.getenv('DATASETS_DIR')
+URL = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'
+DS_DIR = join(DATASETS_DIR, 'cifar100')
+DATA_DIR = join(DS_DIR, 'cifar-100-python')
+
+
+rule all:
+  input:
+    DATA_DIR
+
+rule download:
+  output:
+    directory(DATA_DIR)
+  shell:
+    "python preprocess.py download"
