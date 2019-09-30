@@ -3,24 +3,24 @@
 Preprocessing for CIFAR-100 dataset.
 
 This module provides functions to download and join the complete 
-CIFAR-100 dataset. The dataset are saved and placed as cifar100.h5 at
-${DATASETS} directory.
+CIFAR-100 dataset. The jointly dataset is saved at
+${DATASETS}/cifar100.h5.
 
 Example
 -------
 To run:
-  python preprocess.py mix
+  python preprocess.py run
 
 """
 
 import os
 import pathlib
+import pickle
 from os.path import join
 
 import fire
 import h5py
 import numpy as np
-import pickle
 from dotenv import load_dotenv
 from tqdm import tqdm
 
@@ -32,35 +32,38 @@ DATASETS_DIR = os.getenv('DATASETS_DIR')
 URL = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'
 FILENAME = 'cifar-100-python.tar.gz'
 DS_DIR = join(DATASETS_DIR, 'cifar100')
+IMAGES_DIR = join(DS_DIR, 'images')
 DATA_DIR = join(DS_DIR, 'cifar-100-python')
 MIX_PATH = join(DS_DIR, 'cifar100.h5')
 
 
-def download():
-  """Downloads and extracts at ${DATASETS_DIR}/cifar100."""
-  print('download() running ...')
-  common.utils.download(URL, DS_DIR, FILENAME, extract='auto')
-  print(f'Dataset extrated at {DATA_DIR}')
-
-
-def load_cifar_set(filepath):
+def _load_cifar_set(filepath):
+  """Load train/test subsets from ${DATASETS_DIR}/cifar100/"""
   with open(filepath, 'rb') as f:
     d = pickle.load(f, encoding='bytes')   
     coarses = d[b'coarse_labels']
     fines = d[b'fine_labels']
     names = d[b'filenames']
     imgs = d[b'data']
+    imgs = imgs / 255.0
+    imgs = imgs.reshape((-1, 3, 32, 32)) 
+    imgs = imgs.transpose((0, 2, 3, 1))
     imgs = np.vsplit(imgs, imgs.shape[0])
-    imgs = [i.reshape((3, 32, 32)) for i in imgs]
-    imgs = [i.transpose((1, 2, 0)) for i in imgs]
     return coarses, fines, names, imgs
+  
+
+def download():
+  """Downloads and extracts at ${DATASETS_DIR}/cifar100."""
+  print('download() running ...')
+  common.utils.download(URL, DS_DIR, FILENAME, extract='auto')
+  print(f'Dataset extracted at {DATA_DIR}')
 
 
 def mix():
   """Mix train/test subsets at ${DATASETS_DIR}/cifar100/cifar100.h5."""
   print('mix() running ...')
-  trn = load_cifar_set(os.path.join(DATA_DIR, 'train'))
-  tst = load_cifar_set(os.path.join(DATA_DIR, 'test'))
+  trn = _load_cifar_set(os.path.join(DATA_DIR, 'train'))
+  tst = _load_cifar_set(os.path.join(DATA_DIR, 'test'))
   src_data = [l1 + l2 for l1, l2 in zip(trn, tst)]
   # src_data = [l1[:2] + l2[:2] for l1, l2 in zip(trn, tst)]
 
