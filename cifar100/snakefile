@@ -11,12 +11,12 @@ URL = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'
 FILENAME = 'cifar-100-python.tar.gz'
 DS_DIR = join(DATASETS_DIR, 'cifar100')
 DATA_DIR = join(DS_DIR, 'cifar-100-python')
-MIX_PATH = join(DS_DIR, 'cifar100.h5')
+MERGE_DIR = join(DS_DIR, 'cifar100.zarr')
 
 
 rule all:
   input:
-    MIX_PATH
+    MERGE_DIR
 
 rule download:
   output:
@@ -24,10 +24,10 @@ rule download:
   shell:
     "python preprocess.py download"
 
-rule mix:
+rule merge:
   input:
     DATA_DIR
   output:
-    MIX_PATH
+    directory(MERGE_DIR)
   shell:
-    "python preprocess.py mix"
+    "python preprocess.py merge"
