@@ -3,7 +3,7 @@ asciitree==0.3.3
 astroid==2.3.3
 attrs==19.3.0
 backcall==0.1.0
-certifi==2019.9.11
+certifi==2022.12.7
 chardet==3.0.4
 ConfigArgParse==0.15.1
 datrie==0.8
